@@ -1,6 +1,11 @@
 import { useState } from "react";
 
-const defaultTactics = [
+interface Tactic {
+  name: string;
+  budget: number;
+}
+
+const defaultTactics: Tactic[] = [
   { name: "Tactic 1", budget: 30000 },
   { name: "Tactic 2", budget: 25000 },
   { name: "Tactic 3", budget: 25000 },
@@ -13,28 +18,28 @@ const defaultTactics = [
   { name: "Tactic 10", budget: 0 },
 ];
 
-const fmt = (n) =>
+const fmt = (n: number): string =>
   n === 0 ? "—" : "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const pct = (n) => (n === 0 ? "—" : (n * 100).toFixed(1) + "%");
+const pct = (n: number): string => (n === 0 ? "—" : (n * 100).toFixed(1) + "%");
 
 export default function App() {
-  const [campaignName, setCampaignName] = useState("My PARK Campaign");
-  const [totalBudget, setTotalBudget] = useState(100000);
-  const [monthlySpend, setMonthlySpend] = useState(16250);
-  const [tactics, setTactics] = useState(defaultTactics);
-  const [activeTab, setActiveTab] = useState("calculator");
+  const [campaignName, setCampaignName] = useState<string>("My PARK Campaign");
+  const [totalBudget, setTotalBudget] = useState<number>(100000);
+  const [monthlySpend, setMonthlySpend] = useState<number>(16250);
+  const [tactics, setTactics] = useState<Tactic[]>(defaultTactics);
+  const [activeTab, setActiveTab] = useState<string>("calculator");
 
-  const tacticTotal = tactics.reduce((s, t) => s + (parseFloat(t.budget) || 0), 0);
+  const tacticTotal = tactics.reduce((s, t) => s + (t.budget || 0), 0);
   const budgetMatch = Math.abs(tacticTotal - totalBudget) < 0.01;
 
-  const updateTactic = (i, field, val) => {
+  const updateTactic = (i: number, field: keyof Tactic, val: string | number) => {
     const next = [...tactics];
     next[i] = { ...next[i], [field]: val };
     setTactics(next);
   };
 
   const addTactic = () => setTactics([...tactics, { name: `Tactic ${tactics.length + 1}`, budget: 0 }]);
-  const removeTactic = (i) => tactics.length > 1 && setTactics(tactics.filter((_, idx) => idx !== i));
+  const removeTactic = (i: number) => tactics.length > 1 && setTactics(tactics.filter((_, idx) => idx !== i));
 
   return (
     <div style={{
@@ -176,7 +181,7 @@ export default function App() {
                     ))}
                   </div>
                   {tactics.map((t, i) => {
-                    const b = parseFloat(t.budget) || 0;
+                    const b = t.budget || 0;
                     const p = totalBudget > 0 ? b / totalBudget : 0;
                     return (
                       <div key={i} className="tactic-row">
@@ -225,14 +230,14 @@ export default function App() {
                       <div key={i} className="col-header" style={{ textAlign: i > 0 ? "right" : "left" }}>{h}</div>
                     ))}
                   </div>
-                  {tactics.filter(t => (parseFloat(t.budget) || 0) > 0 || t.name.trim()).map((t, i) => {
-                    const b = parseFloat(t.budget) || 0;
+                  {tactics.filter(t => t.budget > 0 || t.name.trim()).map((t, i) => {
+                    const b = t.budget || 0;
                     const p = totalBudget > 0 ? b / totalBudget : 0;
                     const monthly = monthlySpend * p;
                     return (
                       <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 160px 100px", borderBottom: "1px solid #e4eaf1", background: "#fff", transition: "background 0.1s" }}
-                        onMouseEnter={e => e.currentTarget.style.background = "#f5f8fc"}
-                        onMouseLeave={e => e.currentTarget.style.background = "#fff"}
+                        onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = "#f5f8fc"}
+                        onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = "#fff"}
                       >
                         <div className="cell" style={{ color: p > 0 ? "#1a2533" : "#aab8c8" }}>{t.name || `Tactic ${i + 1}`}</div>
                         <div className="cell" style={{ textAlign: "right", fontWeight: 500, color: monthly > 0 ? "#1a5276" : "#aab8c8" }}>{monthly > 0 ? fmt(monthly) : "—"}</div>
